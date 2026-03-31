@@ -7,6 +7,42 @@ from client import SyndicateClient
 # The Agent's simulated brain and identity
 AGENT_ID = f"SniperNode-{str(uuid.uuid4())[:8]}"
 
+async def process_lead(lead, client, AGENT_ID):
+    logger.info(f"🔎 Lead ID: {lead['id']} | Context: {lead['description'][:50]}... | Min Bid: {lead['min_bid_cents']}¢")
+
+    # Simple heuristic: Always bid on Princeton/Perplexity leads
+    bid_amount = lead['min_bid_cents'] + 20
+
+    # 3. Ensure we have credits to afford this bid.
+    # Using the v0.1 Sandbox MPP endpoint which bypasses Stripe and Auto-Registers the Agent
+    logger.info(f"💳 Executing MPP Credit Top-up for 1000 cents...")
+    topup_res = await client.topup_credits(agent_id=AGENT_ID, package="starter")
+    logger.success(f"✅ New Balance: {topup_res['new_balance_cents']}¢")
+
+    # 4. Place the bid
+    logger.info(f"🎯 Placing aggressive bid of {bid_amount}¢ on Auction {lead['id']}")
+    try:
+        bid_res = await client.place_bid(
+            auction_id=lead['id'],
+            agent_id=AGENT_ID,
+            bid_amount_cents=bid_amount
+        )
+        logger.success(f"🏅 Bid Accepted! ID: {bid_res['bid_id']}")
+    except Exception as e:
+        logger.error(f"❌ Bid Failed: {e}")
+        return
+
+    # 5. Settle the Action (In reality, other agents would bid and time would expire)
+    # We instantly settle to simulate winning and handing the 20% tax to the Syndicate
+    logger.info(f"⏳ Attempting to settle and claim the optimization task...")
+    settle_res = await client.settle_auction(auction_id=lead['id'])
+
+    net_payout = settle_res['net_payout_cents']
+    house_tax = settle_res['syndicate_tax_cents']
+
+    logger.success(f"🥂 AUCTION WON! Handing 20% Tax ({house_tax}¢) back to the House.")
+    logger.info(f"💸 Net Agent Payout remaining for logic: {net_payout}¢")
+
 async def run_sniper():
     logger.info(f"🤖 Booting Syndicate Sniper Agent [{AGENT_ID}]")
     
@@ -24,41 +60,8 @@ async def run_sniper():
             
         logger.success(f"🔍 Found {len(leads)} active GEO leads.")
         
-        for lead in leads:
-            logger.info(f"🔎 Lead ID: {lead['id']} | Context: {lead['description'][:50]}... | Min Bid: {lead['min_bid_cents']}¢")
-            
-            # Simple heuristic: Always bid on Princeton/Perplexity leads
-            bid_amount = lead['min_bid_cents'] + 20
-            
-            # 3. Ensure we have credits to afford this bid.
-            # Using the v0.1 Sandbox MPP endpoint which bypasses Stripe and Auto-Registers the Agent
-            logger.info(f"💳 Executing MPP Credit Top-up for 1000 cents...")
-            topup_res = await client.topup_credits(agent_id=AGENT_ID, package="starter")
-            logger.success(f"✅ New Balance: {topup_res['new_balance_cents']}¢")
-            
-            # 4. Place the bid
-            logger.info(f"🎯 Placing aggressive bid of {bid_amount}¢ on Auction {lead['id']}")
-            try:
-                bid_res = await client.place_bid(
-                    auction_id=lead['id'],
-                    agent_id=AGENT_ID,
-                    bid_amount_cents=bid_amount
-                )
-                logger.success(f"🏅 Bid Accepted! ID: {bid_res['bid_id']}")
-            except Exception as e:
-                logger.error(f"❌ Bid Failed: {e}")
-                continue
-                
-            # 5. Settle the Action (In reality, other agents would bid and time would expire)
-            # We instantly settle to simulate winning and handing the 20% tax to the Syndicate
-            logger.info(f"⏳ Attempting to settle and claim the optimization task...")
-            settle_res = await client.settle_auction(auction_id=lead['id'])
-            
-            net_payout = settle_res['net_payout_cents']
-            house_tax = settle_res['syndicate_tax_cents']
-            
-            logger.success(f"🥂 AUCTION WON! Handing 20% Tax ({house_tax}¢) back to the House.")
-            logger.info(f"💸 Net Agent Payout remaining for logic: {net_payout}¢")
+        tasks = [process_lead(lead, client, AGENT_ID) for lead in leads]
+        await asyncio.gather(*tasks)
             
     except Exception as e:
         logger.critical(f"Agent Crash: {e}")
