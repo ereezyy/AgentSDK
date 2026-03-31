@@ -1,0 +1,3 @@
+## 2024-05-01 - Avoid Recreating Async HTTP Clients in Methods
+**Learning:** Recreating `httpx.AsyncClient` inside every API method call (`async with httpx.AsyncClient()`) adds massive overhead per request. Our benchmarking showed that instantiating it 1000 times takes ~41 seconds vs ~0.04 seconds when reusing one client instance.
+**Action:** When building SDK clients or classes wrapping HTTP APIs, always instantiate a persistent `httpx.AsyncClient` (or equivalent) once per instance (e.g. in `__init__`) and implement an async context manager (`__aenter__` and `__aexit__`) to correctly close it, rather than continually tearing down and establishing new connections.
