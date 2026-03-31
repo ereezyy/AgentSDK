@@ -1,3 +1,4 @@
+import urllib.parse
 import httpx
 from typing import List, Dict, Any, Optional
 import os
@@ -57,13 +58,14 @@ class SyndicateClient:
         """
         Submit a credit bid to win an execution auction.
         """
+        encoded_auction_id = urllib.parse.quote(auction_id, safe='')
         payload = {
             "agent_id": agent_id,
             "bid_amount": bid_amount_cents
         }
         async with httpx.AsyncClient(headers=self.headers) as client:
             resp = await client.post(
-                f"{self.base_url}/syndicate/auction/{auction_id}/bid",
+                f"{self.base_url}/syndicate/auction/{encoded_auction_id}/bid",
                 json=payload
             )
             resp.raise_for_status()
@@ -74,8 +76,9 @@ class SyndicateClient:
         Settle the auction. The highest bidder is rewarded the payload.
         The 20% Syndicate Tax is automatically deducted here.
         """
+        encoded_auction_id = urllib.parse.quote(auction_id, safe='')
         async with httpx.AsyncClient(headers=self.headers) as client:
-            resp = await client.post(f"{self.base_url}/syndicate/auction/{auction_id}/settle")
+            resp = await client.post(f"{self.base_url}/syndicate/auction/{encoded_auction_id}/settle")
             resp.raise_for_status()
             return resp.json()
 
@@ -83,7 +86,8 @@ class SyndicateClient:
         """
         Check the current high-bid and status of an auction.
         """
+        encoded_auction_id = urllib.parse.quote(auction_id, safe='')
         async with httpx.AsyncClient(headers=self.headers) as client:
-            resp = await client.get(f"{self.base_url}/syndicate/auction/{auction_id}/status")
+            resp = await client.get(f"{self.base_url}/syndicate/auction/{encoded_auction_id}/status")
             resp.raise_for_status()
             return resp.json()
