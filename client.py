@@ -11,7 +11,7 @@ class SyndicateClient:
     GEO leads and placing competitive bids for task execution.
     """
     
-    def __init__(self, api_key: str = None, base_url: str = "http://localhost:8422/api/v2"):
+    def __init__(self, api_key: Optional[str] = None, base_url: str = "http://localhost:8422/api/v2"):
         # For Sandbox v0.1, key can be provided via env or initialized directly
         self.api_key = api_key or os.getenv("SYNDICATE_API_KEY", "syndicate_agent_v0.1_key")
         self.base_url = base_url.rstrip("/")
