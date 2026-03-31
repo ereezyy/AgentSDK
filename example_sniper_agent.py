@@ -24,6 +24,8 @@ async def run_sniper():
             
         logger.success(f"🔍 Found {len(leads)} active GEO leads.")
         
+        current_balance_cents = 0
+
         for lead in leads:
             logger.info(f"🔎 Lead ID: {lead['id']} | Context: {lead['description'][:50]}... | Min Bid: {lead['min_bid_cents']}¢")
             
@@ -32,9 +34,11 @@ async def run_sniper():
             
             # 3. Ensure we have credits to afford this bid.
             # Using the v0.1 Sandbox MPP endpoint which bypasses Stripe and Auto-Registers the Agent
-            logger.info(f"💳 Executing MPP Credit Top-up for 1000 cents...")
-            topup_res = await client.topup_credits(agent_id=AGENT_ID, package="starter")
-            logger.success(f"✅ New Balance: {topup_res['new_balance_cents']}¢")
+            while current_balance_cents < bid_amount:
+                logger.info(f"💳 Executing MPP Credit Top-up for 1000 cents...")
+                topup_res = await client.topup_credits(agent_id=AGENT_ID, package="starter")
+                current_balance_cents = topup_res['new_balance_cents']
+                logger.success(f"✅ New Balance: {current_balance_cents}¢")
             
             # 4. Place the bid
             logger.info(f"🎯 Placing aggressive bid of {bid_amount}¢ on Auction {lead['id']}")
@@ -45,6 +49,7 @@ async def run_sniper():
                     bid_amount_cents=bid_amount
                 )
                 logger.success(f"🏅 Bid Accepted! ID: {bid_res['bid_id']}")
+                current_balance_cents -= bid_amount
             except Exception as e:
                 logger.error(f"❌ Bid Failed: {e}")
                 continue
@@ -59,6 +64,7 @@ async def run_sniper():
             
             logger.success(f"🥂 AUCTION WON! Handing 20% Tax ({house_tax}¢) back to the House.")
             logger.info(f"💸 Net Agent Payout remaining for logic: {net_payout}¢")
+            current_balance_cents += net_payout
             
     except Exception as e:
         logger.critical(f"Agent Crash: {e}")
