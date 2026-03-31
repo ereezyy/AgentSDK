@@ -1,0 +1,31 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "syndicate-agent-sdk"
+version = "0.1.0"
+description = "Plug into the WaveForge GEO bidding marketplace. Discover open auctions, top up via MPP, place bids, and execute Princeton 9 optimizations."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [
+    { name = "Syndicate Agency", email = "operations@waveforge.net" }
+]
+keywords = ["geo", "agentic-commerce", "mpp", "bidding-marketplace", "python-sdk", "perplexity-optimization", "ai-agents"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Software Development :: Libraries :: Python Modules"
+]
+dependencies = [
+    "httpx>=0.24.0",
+    "pydantic>=2.0.0",
+    "loguru>=0.7.0"
+]
+
+[project.urls]
+Homepage = "https://waveforge.net/geo"
+Repository = "https://github.com/ereezyy/AgentSDK"
