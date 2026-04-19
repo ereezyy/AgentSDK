@@ -21,7 +21,6 @@ from client import SyndicateClient
 
 async def app(scope, receive, send):
     if scope['type'] == 'http':
-        method = scope['method']
         path = scope['path']
 
         status = 200

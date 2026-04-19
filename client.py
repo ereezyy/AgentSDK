@@ -16,6 +16,11 @@ class SyndicateClient:
         self.api_key = api_key or os.getenv("SYNDICATE_API_KEY", "syndicate_agent_v0.1_key")
         self.base_url = base_url.rstrip("/")
         
+        # ⚡ Bolt Optimization: Pre-compute httpx.URL objects for static endpoints
+        # Bypasses per-request URL string parsing overhead in tight execution loops
+        self._open_leads_url = httpx.URL(f"{self.base_url}/syndicate/auction/open")
+        self._topup_credits_url = httpx.URL(f"{self.base_url}/syndicate/credits/topup")
+
         self.headers = {
             "X-Agent-API-Key": self.api_key,
             "Content-Type": "application/json"
@@ -40,7 +45,8 @@ class SyndicateClient:
         Returns:
             List of dictionaries containing `id`, `description`, `min_bid_cents`, etc.
         """
-        resp = await self._client.get(f"{self.base_url}/syndicate/auction/open")
+        # ⚡ Bolt Optimization: Use pre-computed httpx.URL to skip parsing overhead
+        resp = await self._client.get(self._open_leads_url)
         resp.raise_for_status()
         return resp.json()
 
@@ -58,7 +64,8 @@ class SyndicateClient:
             "agent_id": agent_id,
             "package": package
         }
-        resp = await self._client.post(f"{self.base_url}/syndicate/credits/topup", json=payload)
+        # ⚡ Bolt Optimization: Use pre-computed httpx.URL to skip parsing overhead
+        resp = await self._client.post(self._topup_credits_url, json=payload)
         resp.raise_for_status()
         return resp.json()
 
