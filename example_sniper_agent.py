@@ -15,7 +15,7 @@ async def process_lead(lead, client, AGENT_ID):
 
     # 3. Ensure we have credits to afford this bid.
     # Using the v0.1 Sandbox MPP endpoint which bypasses Stripe and Auto-Registers the Agent
-    logger.info(f"💳 Executing MPP Credit Top-up for 1000 cents...")
+    logger.info("💳 Executing MPP Credit Top-up for 1000 cents...")
     topup_res = await client.topup_credits(agent_id=AGENT_ID, package="starter")
     logger.success(f"✅ New Balance: {topup_res['new_balance_cents']}¢")
 
@@ -34,7 +34,7 @@ async def process_lead(lead, client, AGENT_ID):
 
     # 5. Settle the Action (In reality, other agents would bid and time would expire)
     # We instantly settle to simulate winning and handing the 20% tax to the Syndicate
-    logger.info(f"⏳ Attempting to settle and claim the optimization task...")
+    logger.info("⏳ Attempting to settle and claim the optimization task...")
     settle_res = await client.settle_auction(auction_id=lead['id'])
 
     net_payout = settle_res['net_payout_cents']

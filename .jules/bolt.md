@@ -1,0 +1,3 @@
+## 2024-05-24 - Pre-computing httpx.URL objects
+**Learning:** Pre-computing `httpx.URL` objects for static endpoints bypasses per-request parsing overhead in tight execution loops, but it is considered a micro-optimization with zero measurable impact in the real world compared to network latency. The benchmark script uses an ASGI transport (zero network latency) which makes nanosecond CPU improvements look like large percentage gains (~30%). This leads to rejected, meaningless micro-optimizations.
+**Action:** When benchmarking HTTP client code, avoid testing string manipulations against fully mocked, zero-latency network endpoints. Focus on higher-impact bottlenecks (e.g., caching, connection pooling) rather than string parsing overhead.
