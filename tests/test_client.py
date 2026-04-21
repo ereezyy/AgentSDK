@@ -70,9 +70,14 @@ class TestSyndicateClient(unittest.IsolatedAsyncioTestCase):
 
         mock_client_instance.aclose.assert_called_once()
 
-if __name__ == '__main__':
-    unittest.main()
-    @patch('httpx.AsyncClient.get')
+    async def test_secure_default_base_url(self):
+        """Verify that the default base_url uses HTTPS."""
+        with patch("client.httpx.AsyncClient"):
+            client = SyndicateClient(api_key="test_key")
+            self.assertTrue(client.base_url.startswith("https://"))
+            self.assertEqual(client.base_url, "https://localhost:8422/api/v2")
+
+    @patch('client.httpx.AsyncClient.get')
     async def test_get_open_leads_error_handling(self, mock_get):
         # Setup mock response with error status
         mock_response = MagicMock()
@@ -83,7 +88,9 @@ if __name__ == '__main__':
         )
         mock_get.return_value = mock_response
 
-        client = SyndicateClient()
+        async with SyndicateClient(api_key="test_key") as client:
+            with self.assertRaises(httpx.HTTPStatusError):
+                await client.get_open_leads()
 
-        with self.assertRaises(httpx.HTTPStatusError):
-            await client.get_open_leads()
+if __name__ == '__main__':
+    unittest.main()
