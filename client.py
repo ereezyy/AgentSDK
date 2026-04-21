@@ -11,7 +11,7 @@ class SyndicateClient:
     GEO leads and placing competitive bids for task execution.
     """
     
-    def __init__(self, api_key: Optional[str] = None, base_url: str = "http://localhost:8422/api/v2"):
+    def __init__(self, api_key: Optional[str] = None, base_url: str = "https://localhost:8422/api/v2"):
         # For Sandbox v0.1, key can be provided via env or initialized directly
         self.api_key = api_key or os.getenv("SYNDICATE_API_KEY", "syndicate_agent_v0.1_key")
         self.base_url = base_url.rstrip("/")
@@ -49,7 +49,6 @@ class SyndicateClient:
         Returns:
             List of dictionaries containing `id`, `description`, `min_bid_cents`, etc.
         """
-        resp = await self._client.get(f"{self.base_url}/syndicate/auction/open")
         # ⚡ Bolt Optimization: Use pre-computed httpx.URL to skip parsing overhead
         resp = await self._client.get(self._open_leads_url)
         resp.raise_for_status()
@@ -69,7 +68,6 @@ class SyndicateClient:
             "agent_id": agent_id,
             "package": package
         }
-        resp = await self._client.post(f"{self.base_url}/syndicate/credits/topup", json=payload)
         # ⚡ Bolt Optimization: Use pre-computed httpx.URL to skip parsing overhead
         resp = await self._client.post(self._topup_credits_url, json=payload)
         resp.raise_for_status()
