@@ -1,8 +1,6 @@
 import unittest
 from unittest.mock import patch, MagicMock, AsyncMock
 import httpx
-from unittest.mock import patch, MagicMock
-import httpx
 
 from client import SyndicateClient
 
