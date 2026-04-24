@@ -30,10 +30,6 @@ class SyndicateClient:
         # Impact: Reduces overhead from ~41s to ~0.04s per 1000 requests.
         self._client = httpx.AsyncClient(headers=self.headers)
 
-        # Performance optimization: Pre-compute static URLs to avoid string parsing overhead in tight loops
-        self._open_leads_url = httpx.URL(f"{self.base_url}/syndicate/auction/open")
-        self._topup_url = httpx.URL(f"{self.base_url}/syndicate/credits/topup")
-
     async def __aenter__(self):
         return self
 
@@ -73,8 +69,6 @@ class SyndicateClient:
             "agent_id": agent_id,
             "package": package
         }
-        # Optimized: Use pre-computed httpx.URL to bypass parsing overhead
-        resp = await self._client.post(self._topup_url, json=payload)
         # ⚡ Bolt Optimization: Use pre-computed httpx.URL to skip parsing overhead
         resp = await self._client.post(self._topup_credits_url, json=payload)
         resp.raise_for_status()
