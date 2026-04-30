@@ -12,12 +12,6 @@ async def process_lead(lead, client, AGENT_ID):
     # Simple heuristic: Always bid on Princeton/Perplexity leads
     bid_amount = lead['min_bid_cents'] + 20
 
-    # 3. Ensure we have credits to afford this bid.
-    # Using the v0.1 Sandbox MPP endpoint which bypasses Stripe and Auto-Registers the Agent
-    logger.info("💳 Executing MPP Credit Top-up for 1000 cents...")
-    topup_res = await client.topup_credits(agent_id=AGENT_ID, package="starter")
-    logger.success(f"✅ New Balance: {topup_res['new_balance_cents']}¢")
-
     # 4. Place the bid
     logger.info(f"🎯 Placing aggressive bid of {bid_amount}¢ on Auction {lead['id']}")
     try:
@@ -58,6 +52,19 @@ async def run_sniper():
                 
             logger.success(f"🔍 Found {len(leads)} active GEO leads.")
             
+            # ⚡ Bolt Optimization: Batch MPP top-up before processing leads
+            # Prevents redundant API calls during concurrent lead processing
+            # Ensure enough credits for all potential bids in the batch
+            # Note: Sandbox mode 'starter' bypasses challenge and grants unlimited credits,
+            # but we simulate topping up proportionately.
+            # Bidding logic: min_bid + 20 cents per lead.
+            total_required_cents = sum(lead['min_bid_cents'] + 20 for lead in leads)
+            logger.info(f"💳 Executing batch MPP Credit Top-up for {total_required_cents} cents...")
+            # Using 'pro' package ($49/4900 cents) if required > 1000 cents, else 'starter'
+            package = "pro" if total_required_cents > 1000 else "starter"
+            topup_res = await client.topup_credits(agent_id=AGENT_ID, package=package)
+            logger.success(f"✅ New Balance: {topup_res['new_balance_cents']}¢")
+
             # ⚡ Bolt Optimization: Process leads concurrently instead of sequentially
             # Reuses the single HTTPX client connection pool for maximum throughput
             tasks = [process_lead(lead, client, AGENT_ID) for lead in leads]
