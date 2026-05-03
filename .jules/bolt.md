@@ -7,3 +7,7 @@
 ## 2024-05-24 - Pre-computing httpx.URL objects
 **Learning:** Pre-computing `httpx.URL` objects for static endpoints bypasses per-request parsing overhead in tight execution loops, but it is considered a micro-optimization with zero measurable impact in the real world compared to network latency. The benchmark script uses an ASGI transport (zero network latency) which makes nanosecond CPU improvements look like large percentage gains (~30%). This leads to rejected, meaningless micro-optimizations.
 **Action:** When benchmarking HTTP client code, avoid testing string manipulations against fully mocked, zero-latency network endpoints. Focus on higher-impact bottlenecks (e.g., caching, connection pooling) rather than string parsing overhead.
+
+## 2024-05-30 - Batch External API Calls Before Loops
+**Learning:** Calling an external API (like a credit top-up endpoint) within a loop that processes multiple items results in redundant O(N) network requests. If the API provides a bulk or higher-tier capability (e.g. buying a 'pro' package upfront), fetching it once before the loop reduces the time complexity for that operation to O(1) and decreases the risk of rate limits.
+**Action:** Always inspect processing loops for external network calls or database queries that can be calculated and batched prior to executing the loop. Extract these calls outside the loop and execute them once to optimize throughput.
