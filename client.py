@@ -82,15 +82,10 @@ class SyndicateClient:
             "agent_id": agent_id,
             "bid_amount": bid_amount_cents
         }
-        async with httpx.AsyncClient(headers=self.headers) as client:
-            resp = await client.post(
-                f"{self.base_url}/syndicate/auction/{encoded_auction_id}/bid",
-                json=payload
-            )
-            resp.raise_for_status()
-            return resp.json()
+        # ⚡ Bolt Optimization: Reuse persistent HTTPX client connection pool
+        # Bypasses expensive per-request client initialization and teardown
         resp = await self._client.post(
-            f"{self.base_url}/syndicate/auction/{auction_id}/bid",
+            f"{self.base_url}/syndicate/auction/{encoded_auction_id}/bid",
             json=payload
         )
         resp.raise_for_status()
@@ -102,11 +97,9 @@ class SyndicateClient:
         The 20% Syndicate Tax is automatically deducted here.
         """
         encoded_auction_id = urllib.parse.quote(auction_id, safe='')
-        async with httpx.AsyncClient(headers=self.headers) as client:
-            resp = await client.post(f"{self.base_url}/syndicate/auction/{encoded_auction_id}/settle")
-            resp.raise_for_status()
-            return resp.json()
-        resp = await self._client.post(f"{self.base_url}/syndicate/auction/{auction_id}/settle")
+        # ⚡ Bolt Optimization: Reuse persistent HTTPX client connection pool
+        # Bypasses expensive per-request client initialization and teardown
+        resp = await self._client.post(f"{self.base_url}/syndicate/auction/{encoded_auction_id}/settle")
         resp.raise_for_status()
         return resp.json()
 
@@ -115,10 +108,8 @@ class SyndicateClient:
         Check the current high-bid and status of an auction.
         """
         encoded_auction_id = urllib.parse.quote(auction_id, safe='')
-        async with httpx.AsyncClient(headers=self.headers) as client:
-            resp = await client.get(f"{self.base_url}/syndicate/auction/{encoded_auction_id}/status")
-            resp.raise_for_status()
-            return resp.json()
-        resp = await self._client.get(f"{self.base_url}/syndicate/auction/{auction_id}/status")
+        # ⚡ Bolt Optimization: Reuse persistent HTTPX client connection pool
+        # Bypasses expensive per-request client initialization and teardown
+        resp = await self._client.get(f"{self.base_url}/syndicate/auction/{encoded_auction_id}/status")
         resp.raise_for_status()
         return resp.json()

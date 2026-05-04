@@ -1,9 +1,8 @@
 import unittest
 import urllib.parse
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, AsyncMock
 from client import SyndicateClient
 import httpx
-import asyncio
 
 class TestSyndicateClient(unittest.IsolatedAsyncioTestCase):
     async def test_place_bid_url_encoding(self):
@@ -60,12 +59,6 @@ class TestSyndicateClient(unittest.IsolatedAsyncioTestCase):
             called_url = mock_get.call_args[0][0]
             self.assertIn(f"/syndicate/auction/{encoded_id}/status", called_url)
             self.assertNotIn(f"/syndicate/auction/{auction_id}/status", called_url)
-from unittest.mock import patch, MagicMock, AsyncMock
-import httpx
-
-from client import SyndicateClient
-
-class TestSyndicateClient(unittest.IsolatedAsyncioTestCase):
 
     @patch("client.httpx.AsyncClient")
     async def test_get_open_leads(self, mock_async_client_class):
