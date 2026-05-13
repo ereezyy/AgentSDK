@@ -11,3 +11,6 @@
 ## 2024-05-30 - Batch External API Calls Before Loops
 **Learning:** Calling an external API (like a credit top-up endpoint) within a loop that processes multiple items results in redundant O(N) network requests. If the API provides a bulk or higher-tier capability (e.g. buying a 'pro' package upfront), fetching it once before the loop reduces the time complexity for that operation to O(1) and decreases the risk of rate limits.
 **Action:** Always inspect processing loops for external network calls or database queries that can be calculated and batched prior to executing the loop. Extract these calls outside the loop and execute them once to optimize throughput.
+## 2024-05-31 - HTTPX Connection Pool Limits for Concurrency
+**Learning:** When configuring `httpx.AsyncClient` for highly concurrent scenarios (e.g., executing multiple requests concurrently with `asyncio.gather`), the default connection pool limits (100 max, 20 keepalive) can act as a significant bottleneck. Requests exceeding these limits are queued, which increases latency and reduces overall throughput.
+**Action:** Always explicitly increase the connection pool limits using `httpx.Limits(max_connections=..., max_keepalive_connections=...)` when initializing a persistent `httpx.AsyncClient` that will be used in highly concurrent workloads.
