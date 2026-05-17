@@ -29,7 +29,13 @@ class SyndicateClient:
         # ⚡ Bolt Optimization: Reuse a single httpx.AsyncClient instance
         # instead of instantiating one per method call.
         # Impact: Reduces overhead from ~41s to ~0.04s per 1000 requests.
-        self._client = httpx.AsyncClient(headers=self.headers)
+        # ⚡ Bolt Optimization: Explicitly increase connection pool limits
+        # Default limits (100 max, 20 keepalive) bottleneck highly concurrent
+        # scenarios (like using asyncio.gather).
+        self._client = httpx.AsyncClient(
+            headers=self.headers,
+            limits=httpx.Limits(max_connections=1000, max_keepalive_connections=100)
+        )
 
     async def __aenter__(self):
         return self
