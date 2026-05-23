@@ -138,7 +138,6 @@ class TestSyndicateClient(unittest.IsolatedAsyncioTestCase):
         mock_response.raise_for_status.assert_called_once()
         mock_response.json.assert_called_once()
 
-if __name__ == "__main__":
 from unittest.mock import patch, MagicMock, AsyncMock
 import httpx
 from client import SyndicateClient
@@ -188,7 +187,6 @@ class TestSyndicateClient(unittest.IsolatedAsyncioTestCase):
 
         mock_instance.post.assert_called_once_with("http://test.local/syndicate/auction/auc_123/settle")
 
-if __name__ == "__main__":
 import urllib.parse
 from unittest.mock import patch, MagicMock, AsyncMock
 from client import SyndicateClient
