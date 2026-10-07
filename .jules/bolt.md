@@ -14,3 +14,7 @@
 ## 2026-05-20 - Increase HTTPX Connection Pool Limits for Concurrency
 **Learning:** When configuring `httpx.AsyncClient` for highly concurrent scenarios (e.g., using `asyncio.gather`), the default limits (100 max, 20 keepalive) can bottleneck and queue requests, significantly reducing throughput.
 **Action:** Explicitly increase connection pool limits using `httpx.Limits(max_connections=500, max_keepalive_connections=100)` when initializing the client.
+
+## 2024-10-06 - Pre-compute mock JSON responses to speed up functional tests
+**Learning:** In mock servers or ASGI test applications, inline dynamic `json.dumps(...).encode()` for static endpoints adds unnecessary memory allocation and CPU overhead on every request.
+**Action:** Always pre-compute and serialize static mock JSON responses as module-level constants to bypass per-request serialization overhead.
