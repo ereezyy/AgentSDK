@@ -1,7 +1,13 @@
 import asyncio
 import uuid
+import sys
 from loguru import logger
 from client import SyndicateClient
+
+# ⚡ Bolt Optimization: Offload logging to a background thread
+# Using enqueue=True prevents synchronous logging from blocking the asyncio event loop
+logger.remove()
+logger.add(sys.stderr, enqueue=True)
 
 # The Agent's simulated brain and identity
 AGENT_ID = f"SniperNode-{str(uuid.uuid4())[:8]}"

@@ -14,3 +14,7 @@
 ## 2026-05-20 - Increase HTTPX Connection Pool Limits for Concurrency
 **Learning:** When configuring `httpx.AsyncClient` for highly concurrent scenarios (e.g., using `asyncio.gather`), the default limits (100 max, 20 keepalive) can bottleneck and queue requests, significantly reducing throughput.
 **Action:** Explicitly increase connection pool limits using `httpx.Limits(max_connections=500, max_keepalive_connections=100)` when initializing the client.
+
+## 2023-10-26 - Offload Loguru to Background Thread
+**Learning:** In asyncio applications using `loguru`, synchronous logging blocks the event loop, particularly when stderr write latency is high. When benchmarking asynchronous logging improvements (like `enqueue=True`), it is critical to measure event loop lag with simulated slow I/O; otherwise, tight CPU-bound loops will misleadingly show background logging as slower due to queuing overhead.
+**Action:** When configuring `loguru` in asyncio entry points, offload logging to a background thread by calling `logger.remove()` and `logger.add(sys.stderr, enqueue=True)` to prevent the event loop from being blocked by I/O.
