@@ -19,6 +19,12 @@ except ImportError:
 
 from client import SyndicateClient
 
+MOCK_RESPONSE_AUCTION_OPEN = json.dumps([{"id": "auction1", "description": "test", "min_bid_cents": 100}]).encode()
+MOCK_RESPONSE_CREDITS_TOPUP = json.dumps({"new_balance_cents": 1000}).encode()
+MOCK_RESPONSE_BID = json.dumps({"bid_id": "bid123"}).encode()
+MOCK_RESPONSE_SETTLE = json.dumps({"net_payout_cents": 80, "syndicate_tax_cents": 20}).encode()
+MOCK_RESPONSE_STATUS = json.dumps({"status": "open"}).encode()
+
 async def app(scope, receive, send):
     if scope['type'] == 'http':
         path = scope['path']
@@ -27,15 +33,15 @@ async def app(scope, receive, send):
         body = b"{}"
 
         if path == "/syndicate/auction/open":
-            body = json.dumps([{"id": "auction1", "description": "test", "min_bid_cents": 100}]).encode()
+            body = MOCK_RESPONSE_AUCTION_OPEN
         elif path == "/syndicate/credits/topup":
-            body = json.dumps({"new_balance_cents": 1000}).encode()
+            body = MOCK_RESPONSE_CREDITS_TOPUP
         elif "/bid" in path:
-            body = json.dumps({"bid_id": "bid123"}).encode()
+            body = MOCK_RESPONSE_BID
         elif "/settle" in path:
-            body = json.dumps({"net_payout_cents": 80, "syndicate_tax_cents": 20}).encode()
+            body = MOCK_RESPONSE_SETTLE
         elif "/status" in path:
-            body = json.dumps({"status": "open"}).encode()
+            body = MOCK_RESPONSE_STATUS
 
         await send({'type': 'http.response.start', 'status': status, 'headers': [[b'content-type', b'application/json']]})
         await send({'type': 'http.response.body', 'body': body})
