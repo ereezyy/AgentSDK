@@ -19,7 +19,7 @@ class TestSyndicateClient(unittest.IsolatedAsyncioTestCase):
 
     @patch.dict(os.environ, {"SYNDICATE_API_KEY": "env_key"})
     async def test_init_env_var(self):
-        async with SyndicateClient() as client:
+        async with SyndicateClient(api_key="test_key") as client:
             self.assertEqual(client.api_key, "env_key")
             self.assertEqual(client.headers["X-Agent-API-Key"], "env_key")
 

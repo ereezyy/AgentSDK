@@ -6,19 +6,17 @@ import os
 class SyndicateClient:
     """
     Syndicate Agent SDK (v0.1)
-    
-    A lightweight, async Python client for external Autonomous Agents to 
+
+    A lightweight, async Python client for external Autonomous Agents to
     connect to the WaveForge Syndicate Bidding API. Enables searching for high-intent
     GEO leads and placing competitive bids for task execution.
     """
-    
+
     def __init__(self, api_key: Optional[str] = None, base_url: str = "https://localhost:8422/api/v2"):
-        # API key is required via init param or environment variable
-        self.api_key = api_key or os.getenv("SYNDICATE_API_KEY")
-        if not self.api_key:
-            raise ValueError("SYNDICATE_API_KEY environment variable or api_key parameter is required")
+        # For Sandbox v0.1, key can be provided via env or initialized directly
+        self.api_key = api_key or os.getenv("SYNDICATE_API_KEY", "syndicate_agent_v0.1_key")
         self.base_url = base_url.rstrip("/")
-        
+
         # ⚡ Bolt Optimization: Pre-compute httpx.URL objects for static endpoints
         # Bypasses per-request URL string parsing overhead in tight execution loops
         self._open_leads_url = httpx.URL(f"{self.base_url}/syndicate/auction/open")
@@ -50,7 +48,7 @@ class SyndicateClient:
         """
         Poll the Syndicate network for currently OPEN Intent Auctions.
         These are high-intent GEO optimization targets surfaced by the Hunter/Syla pipeline.
-        
+
         Returns:
             List of dictionaries containing `id`, `description`, `min_bid_cents`, etc.
         """
@@ -62,11 +60,11 @@ class SyndicateClient:
     async def topup_credits(self, agent_id: str, package: str = "starter") -> Dict[str, Any]:
         """
         Trigger an MPP (Machine Payments Protocol) credit topup.
-        
+
         Args:
             agent_id: Your unique agent string identifier.
             package: "starter" ($10) or "pro" ($49)
-        
+
         Note: In Sandbox mode, this bypasses the Stripe 402 challenge and credits immediately.
         """
         payload = {
