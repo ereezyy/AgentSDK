@@ -46,6 +46,10 @@ class SyndicateClient:
         """Close the underlying HTTPX client."""
         await self._client.aclose()
 
+    def _encode_auction_id(self, auction_id: str) -> str:
+        """Helper method to URL-encode auction IDs."""
+        return urllib.parse.quote(auction_id, safe='')
+
     async def get_open_leads(self) -> List[Dict[str, Any]]:
         """
         Poll the Syndicate network for currently OPEN Intent Auctions.
@@ -82,7 +86,7 @@ class SyndicateClient:
         """
         Submit a credit bid to win an execution auction.
         """
-        encoded_auction_id = urllib.parse.quote(auction_id, safe='')
+        encoded_auction_id = self._encode_auction_id(auction_id)
         payload = {
             "agent_id": agent_id,
             "bid_amount": bid_amount_cents
@@ -101,7 +105,7 @@ class SyndicateClient:
         Settle the auction. The highest bidder is rewarded the payload.
         The 20% Syndicate Tax is automatically deducted here.
         """
-        encoded_auction_id = urllib.parse.quote(auction_id, safe='')
+        encoded_auction_id = self._encode_auction_id(auction_id)
         # ⚡ Bolt Optimization: Reuse persistent HTTPX client connection pool
         # Bypasses expensive per-request client initialization and teardown
         resp = await self._client.post(f"{self.base_url}/syndicate/auction/{encoded_auction_id}/settle")
@@ -112,7 +116,7 @@ class SyndicateClient:
         """
         Check the current high-bid and status of an auction.
         """
-        encoded_auction_id = urllib.parse.quote(auction_id, safe='')
+        encoded_auction_id = self._encode_auction_id(auction_id)
         # ⚡ Bolt Optimization: Reuse persistent HTTPX client connection pool
         # Bypasses expensive per-request client initialization and teardown
         resp = await self._client.get(f"{self.base_url}/syndicate/auction/{encoded_auction_id}/status")
